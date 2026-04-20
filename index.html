@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-icon">⚖️</span>
+        <h1 class="header-main-title">Body Mass Index (BMI) Calculator</h1>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── STAGE 1: ANIMASI TIMBANGAN ── -->
+    <section id="scaleStage" class="stage center-stage">
+      <div class="center-card">
+        <svg class="scale-svg" viewBox="0 0 160 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="90" width="140" height="55" rx="14" fill="#fde8e8"/>
+          <rect x="10" y="90" width="140" height="55" rx="14" stroke="#93191b" stroke-width="2.5"/>
+          <rect x="50" y="58" width="60" height="36" rx="8" fill="#fde8e8" stroke="#93191b" stroke-width="2"/>
+          <path d="M55 76 Q80 58 105 76" stroke="#c94a4c" stroke-width="2" fill="none"/>
+          <circle cx="80" cy="76" r="4" fill="#93191b"/>
+          <line id="needle" x1="80" y1="76" x2="102" y2="60" stroke="#93191b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="80" y="114" text-anchor="middle" font-size="13" font-weight="700" fill="#93191b" font-family="'Space Mono', monospace">? kg</text>
+          <line x1="20"  y1="105" x2="20"  y2="112" stroke="#c94a4c" stroke-width="2"/>
+          <line x1="35"  y1="103" x2="35"  y2="110" stroke="#c94a4c" stroke-width="2"/>
+          <line x1="125" y1="103" x2="125" y2="110" stroke="#c94a4c" stroke-width="2"/>
+          <line x1="140" y1="105" x2="140" y2="112" stroke="#c94a4c" stroke-width="2"/>
+          <g id="personSvg">
+            <circle cx="80" cy="28" r="12" fill="#93191b"/>
+            <rect x="72" y="42" width="16" height="22" rx="6" fill="#93191b"/>
+            <line x1="72" y1="50" x2="62" y2="60" stroke="#93191b" stroke-width="4" stroke-linecap="round"/>
+            <line x1="88" y1="50" x2="98" y2="60" stroke="#93191b" stroke-width="4" stroke-linecap="round"/>
+            <line x1="75" y1="64" x2="72" y2="78" stroke="#93191b" stroke-width="4" stroke-linecap="round"/>
+            <line x1="85" y1="64" x2="88" y2="78" stroke="#93191b" stroke-width="4" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <p class="scale-sub">Cek kondisi tubuhmu dan dapatkan panduan yang tepat, baik untuk menambah maupun menurunkan berat badan secara sehat.</p>
+        <button class="primary-btn" id="startBtn">Yuk, Mulai! 🎯</button>
+      </div>
+    </section>
+
+    <!-- ── STAGE 2: FORM INPUT ── -->
+    <section id="formStage" class="stage center-stage" style="display:none;">
+      <div class="center-card">
+        <p class="pre-form-label">Cek BMI mu sekarang!</p>
+        <h2 class="card-title">📋 Data Diri Kamu</h2>
+        <div class="field">
+          <label>Berat Badan (kg)</label>
+          <input type="number" id="weight" placeholder="65" min="20" max="300">
+        </div>
+        <div class="field">
+          <label>Tinggi Badan (cm)</label>
+          <input type="number" id="height" placeholder="170" min="50" max="250">
+        </div>
+        <div class="field">
+          <label>Jenis Kelamin</label>
+          <div class="gender-row">
+            <div class="gender-opt active" id="gPria" onclick="selectGender('Pria')">
+              <span class="icon">👨</span>Pria
+            </div>
+            <div class="gender-opt" id="gWanita" onclick="selectGender('Wanita')">
+              <span class="icon">👩</span>Wanita
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn full" onclick="calcBMI()">Hitung BMI Saya →</button>
+      </div>
+    </section>
+
+    <!-- ── STAGE 3: HASIL (2 KOLOM) ── -->
+    <section id="resultStage" class="stage result-layout" style="display:none;">
+
+      <!-- KOLOM KIRI -->
+      <div class="col-left">
+
+        <div class="result-card" id="resultCard">
+          <div class="deco"></div>
+          <div class="result-bmi-label">Indeks Massa Tubuh</div>
+          <div class="result-bmi-num" id="resultBmiNum">—</div>
+          <div class="result-category" id="resultCategory">—</div>
+          <div class="result-msg" id="resultMsg"></div>
+          <div class="border-warning" id="borderWarning" style="display:none;"></div>
+        </div>
+
+        <!-- BMI Scale Image + Ruler Indicator -->
+        <div class="bmi-ruler-card">
+          <div class="ruler-title">Posisi BMI Kamu</div>
+          <img
+            src="https://www.usz.ch/app/uploads/2025/03/usz-bmi-calculator-group.jpg"
+            alt="Skala BMI Visual"
+            class="bmi-scale-img"
+            onerror="this.style.display='none'; document.getElementById('rulerFallback').style.display='block';"
+          />
+          <!-- Fallback jika gambar gagal load -->
+          <div id="rulerFallback" style="display:none;">
+            <div class="ruler-bar">
+              <div class="ruler-seg" style="background:#60a5fa"></div>
+              <div class="ruler-seg" style="background:#22c55e"></div>
+              <div class="ruler-seg" style="background:#facc15"></div>
+              <div class="ruler-seg" style="background:#fb923c"></div>
+              <div class="ruler-seg" style="background:#f97316"></div>
+              <div class="ruler-seg" style="background:#dc2626"></div>
+            </div>
+            <div class="ruler-labels">
+              <span>&lt;18.5</span>
+              <span>22.9</span>
+              <span>24.9</span>
+              <span>29.9</span>
+              <span>34.9</span>
+              <span>40+</span>
+            </div>
+          </div>
+          <!-- Indikator posisi (titik hitam) -->
+          <div class="ruler-names">
+            <div class="ruler-name" style="color:#1d4ed8">
+              Kurus
+              <div class="ruler-indicator" id="ind0"></div>
+            </div>
+            <div class="ruler-name" style="color:#15803d">
+              Normal
+              <div class="ruler-indicator" id="ind1"></div>
+            </div>
+            <div class="ruler-name" style="color:#a16207">
+              Berlebih
+              <div class="ruler-indicator" id="ind2"></div>
+            </div>
+            <div class="ruler-name" style="color:#c2410c">
+              Obesitas I
+              <div class="ruler-indicator" id="ind3"></div>
+            </div>
+            <div class="ruler-name" style="color:#9a3412">
+              Obesitas II
+              <div class="ruler-indicator" id="ind4"></div>
+            </div>
+            <div class="ruler-name" style="color:#991b1b">
+              Obesitas III
+              <div class="ruler-indicator" id="ind5"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetAll()">↩ Hitung Ulang</button>
+      </div>
+
+      <!-- KOLOM KANAN -->
+      <div class="col-right">
+
+        <!-- TIPS DIET: muncul jika berlebih / obesitas I / II / III -->
+        <div id="tipsDiet" style="display:none;">
+          <p class="tips-title">💡 Tips Diet yang Bisa Kamu Coba</p>
+
+          <div class="diet-card" id="dc0">
+            <div class="diet-header" onclick="toggleTip('d0')">
+              <div class="diet-icon">⏰</div>
+              <div class="diet-info">
+                <div class="diet-name">Diet Intermittent Fasting (IF)</div>
+                <div class="diet-tagline">Atur waktu makan, bukan jenis makanan</div>
+              </div>
+              <span class="diet-pill pill-red">Populer</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbd0">
+              <p class="diet-desc">Intermittent Fasting adalah pola makan dengan jendela puasa dan makan yang terjadwal. Tidak membatasi jenis makanan, hanya mengatur kapan kamu boleh makan. Cocok untuk pemula yang baru memulai diet.</p>
+              <ul class="diet-steps">
+                <li>Metode 16:8 — puasa 16 jam, makan dalam jendela 8 jam (contoh: jam 12.00–20.00)</li>
+                <li>Metode 5:2 — makan normal 5 hari, batasi kalori 500–600 di 2 hari lainnya</li>
+                <li>Hindari minuman berkalori saat puasa, teh/kopi tanpa gula masih diperbolehkan</li>
+                <li>Tetap terhidrasi dengan air putih minimal 2 liter per hari</li>
+                <li>Konsultasikan dengan dokter jika memiliki kondisi medis tertentu</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="dc1">
+            <div class="diet-header" onclick="toggleTip('d1')">
+              <div class="diet-icon">🍽️</div>
+              <div class="diet-info">
+                <div class="diet-name">Diet OMAD (One Meal A Day)</div>
+                <div class="diet-tagline">Satu kali makan besar setiap hari</div>
+              </div>
+              <span class="diet-pill pill-dark">Ekstrem</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbd1">
+              <p class="diet-desc">OMAD adalah variasi IF yang lebih ketat, kamu hanya makan sekali dalam sehari. Cocok untuk yang sudah terbiasa dengan IF dan ingin hasil yang lebih signifikan.</p>
+              <ul class="diet-steps">
+                <li>Tentukan waktu makan yang konsisten setiap hari (contoh: jam 18.00)</li>
+                <li>Penuhi semua kebutuhan nutrisi tubuhmu dalam satu porsi (protein, lemak, karbo, sayur)</li>
+                <li>Mulai bertahap dari IF 16:8 dulu sebelum mencoba OMAD</li>
+                <li>Tidak dianjurkan untuk ibu hamil, remaja, atau penderita gangguan makan</li>
+                <li>Pantau kondisi tubuhmu. Jika lemas berlebihan, segera hentikan</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="dc2">
+            <div class="diet-header" onclick="toggleTip('d2')">
+              <div class="diet-icon">🥑</div>
+              <div class="diet-info">
+                <div class="diet-name">Diet Keto</div>
+                <div class="diet-tagline">Lemak jadi bahan bakar utama tubuh</div>
+              </div>
+              <span class="diet-pill pill-outline">Rendah Karbo</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbd2">
+              <p class="diet-desc">Diet ketogenik sangat membatasi karbohidrat dan menggantinya dengan lemak sebagai sumber energi utama. Tubuh masuk ke kondisi ketosis sehingga membakar lemak lebih efisien.</p>
+              <ul class="diet-steps">
+                <li>Batasi karbohidrat di bawah 20–50 gram per hari</li>
+                <li>Konsumsi lemak sehat: alpukat, minyak zaitun, kacang-kacangan, keju</li>
+                <li>Protein sedang: telur, daging tanpa lemak, ikan salmon</li>
+                <li>Hindari nasi, roti, gula, buah manis, dan semua makanan bertepung</li>
+                <li>Fase awal mungkin ada keto flu atau sakit kepala ringan, normal dalam 3–5 hari</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="dc3">
+            <div class="diet-header" onclick="toggleTip('d3')">
+              <div class="diet-icon">🔄</div>
+              <div class="diet-info">
+                <div class="diet-name">Diet Carbo Cycling</div>
+                <div class="diet-tagline">Sesuaikan karbo dengan aktivitasmu</div>
+              </div>
+              <span class="diet-pill pill-outline">Fleksibel</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbd3">
+              <p class="diet-desc">Carbo cycling mengatur asupan karbohidrat bergantian antara hari tinggi dan rendah karbo, disesuaikan dengan hari latihan dan istirahat agar performa tetap optimal.</p>
+              <ul class="diet-steps">
+                <li>Hari olahraga/bergerak aktif — konsumsi karbohidrat lebih tinggi (nasi, ubi, oat)</li>
+                <li>Hari istirahat — kurangi karbohidrat, perbanyak protein dan sayur hijau</li>
+                <li>Cocok dikombinasikan dengan program latihan beban atau cardio rutin</li>
+                <li>Tetap perhatikan total kalori harian agar tidak surplus</li>
+                <li>Cocok untuk yang aktif berolahraga minimal 3x seminggu</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="dc4">
+            <div class="diet-header" onclick="toggleTip('d4')">
+              <div class="diet-icon">📅</div>
+              <div class="diet-info">
+                <div class="diet-name">Diet Mayo</div>
+                <div class="diet-tagline">Program 13 hari tanpa garam</div>
+              </div>
+              <span class="diet-pill pill-red">13 Hari</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbd4">
+              <p class="diet-desc">Diet Mayo adalah program makan selama 13 hari yang fokus pada protein tinggi dan sangat rendah garam. Dikenal dapat menurunkan berat badan secara signifikan dalam waktu singkat.</p>
+              <ul class="diet-steps">
+                <li>Durasi tepat 13 hari, tidak boleh berhenti atau istirahat di tengah jalan</li>
+                <li>Tidak mengonsumsi garam sama sekali selama program berlangsung</li>
+                <li>Menu utama: telur rebus, daging tanpa lemak, sayuran, buah tertentu</li>
+                <li>Hindari gula, nasi, tepung, dan semua makanan olahan/kemasan</li>
+                <li>Minum air putih minimal 2 liter per hari sepanjang program</li>
+                <li>Setelah selesai, jeda minimal 2 hari sebelum mengulang kembali</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="danger-warning">
+            <div class="danger-title">⚠️ Awas Cara Tidak Sehat!</div>
+            <p class="danger-text">Beberapa metode penurunan berat badan yang viral seperti diet ekstrem ala idol k-pop atau mengkonsumsi makanan di bawah 500 kalori memang terlihat cepat hasilnya. Namun, tubuh yang kekurangan nutrisi akan masuk ke mode "kelaparan", sehingga metabolisme melambat dan massa otot ikut berkurang, bukan hanya lemak.</p>
+            <p class="danger-text">Saat diet ekstrem dihentikan, tubuh justru menyimpan kalori lebih banyak sebagai bentuk perlindungan. Akibatnya, berat badan bisa naik kembali dengan cepat, bahkan melebihi berat semula.</p>
+          </div>
+        </div>
+
+        <!-- TIPS TAMBAH BB: muncul jika kurus -->
+        <div id="tipsKurus" style="display:none;">
+          <p class="tips-title">💪 Tips Menambah Berat Badan Secara Sehat</p>
+
+          <div class="diet-card" id="tk0">
+            <div class="diet-header" onclick="toggleTip('k0')">
+              <div class="diet-icon">🥗</div>
+              <div class="diet-info">
+                <div class="diet-name">Pilih Makanan Sehat Kaya Nutrisi</div>
+                <div class="diet-tagline">Berat naik, tubuh tetap sehat</div>
+              </div>
+              <span class="diet-pill pill-outline">Utama</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbk0">
+              <p class="diet-desc">Menambah berat badan bukan berarti boleh makan sembarang. Prioritaskan makanan padat nutrisi agar kenaikan berat badan berasal dari massa otot dan jaringan sehat, bukan lemak berlebih.</p>
+              <ul class="diet-steps">
+                <li>Konsumsi protein berkualitas tinggi: telur, daging merah tanpa lemak, ikan, tahu, tempe</li>
+                <li>Tambahkan karbohidrat kompleks: nasi merah, ubi, oat, dan roti gandum utuh</li>
+                <li>Perbanyak lemak sehat: alpukat, kacang-kacangan, minyak zaitun, ikan berlemak</li>
+                <li>Tambahkan sayur dan buah untuk memenuhi kebutuhan vitamin dan mineral</li>
+                <li>Hindari makanan ultra-proses yang tinggi gula dan lemak jenuh</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="tk1">
+            <div class="diet-header" onclick="toggleTip('k1')">
+              <div class="diet-icon">🔥</div>
+              <div class="diet-info">
+                <div class="diet-name">Tambah Asupan Kalori Secara Bertahap</div>
+                <div class="diet-tagline">Surplus kalori adalah bahan bakar pertumbuhan</div>
+              </div>
+              <span class="diet-pill pill-red">Penting</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbk1">
+              <p class="diet-desc">Untuk menambah berat badan, tubuh membutuhkan lebih banyak kalori dari yang dibakar. Tambahkan kalori secara bertahap agar tubuh dapat menyesuaikan diri dengan baik.</p>
+              <ul class="diet-steps">
+                <li>Targetkan surplus 300–500 kalori per hari di atas kebutuhan harianmu</li>
+                <li>Gunakan aplikasi pencatat kalori untuk memantau asupan harian</li>
+                <li>Pilih sumber kalori yang padat nutrisi, bukan kalori kosong dari gula/gorengan</li>
+                <li>Tambahkan topping bergizi: keju, selai kacang, biji-bijian ke dalam makanan</li>
+                <li>Konsultasikan kebutuhan kalori ideal dengan ahli gizi jika perlu</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="tk2">
+            <div class="diet-header" onclick="toggleTip('k2')">
+              <div class="diet-icon">🕐</div>
+              <div class="diet-info">
+                <div class="diet-name">Makan Lebih Sering dengan Porsi Kecil</div>
+                <div class="diet-tagline">Jangan biarkan perut kosong terlalu lama</div>
+              </div>
+              <span class="diet-pill pill-outline">Mudah</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbk2">
+              <p class="diet-desc">Jika makan banyak dalam satu waktu terasa berat di perut, cara terbaik adalah membagi jadwal makan menjadi lebih sering dengan porsi yang lebih kecil namun tetap kaya kalori.</p>
+              <ul class="diet-steps">
+                <li>Makan 5–6 kali sehari: 3 kali makan utama + 2–3 kali camilan bergizi</li>
+                <li>Jadwalkan waktu makan setiap 2–3 jam agar tidak melewatkannya</li>
+                <li>Camilan sehat: pisang + selai kacang, yoghurt granola, telur rebus, atau smoothie</li>
+                <li>Jangan lewatkan sarapan. Ini waktu terpenting untuk mulai mengisi energi</li>
+                <li>Siapkan camilan mudah di tas agar selalu ada makanan saat di luar rumah</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="tk3">
+            <div class="diet-header" onclick="toggleTip('k3')">
+              <div class="diet-icon">🥤</div>
+              <div class="diet-info">
+                <div class="diet-name">Konsumsi Minuman Padat Kalori & Nutrisi</div>
+                <div class="diet-tagline">Tambah kalori tanpa merasa kekenyangan</div>
+              </div>
+              <span class="diet-pill pill-outline">Praktis</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbk3">
+              <p class="diet-desc">Minuman bisa menjadi cara cerdas menambah asupan kalori dan nutrisi tanpa membebani sistem pencernaan, terutama bagi yang sulit makan dalam porsi besar.</p>
+              <ul class="diet-steps">
+                <li>Buat smoothie tinggi kalori: pisang + susu full cream + selai kacang + oat</li>
+                <li>Konsumsi susu full cream atau susu tinggi protein 2–3 gelas per hari</li>
+                <li>Tambahkan protein shake jika diperlukan</li>
+                <li>Hindari minuman dengan pemanis buatan atau yang banyak gula tambahan</li>
+                <li>Jus buah segar tanpa saringan lebih baik karena masih mengandung serat</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="diet-card" id="tk4">
+            <div class="diet-header" onclick="toggleTip('k4')">
+              <div class="diet-icon">🏋️</div>
+              <div class="diet-info">
+                <div class="diet-name">Rutin Berolahraga</div>
+                <div class="diet-tagline">Bangun otot, bukan hanya menumpuk lemak</div>
+              </div>
+              <span class="diet-pill pill-red">Wajib</span>
+              <span class="diet-chevron">▼</span>
+            </div>
+            <div class="diet-body" id="dbk4">
+              <p class="diet-desc">Olahraga khususnya latihan beban, adalah kunci menambah berat badan secara sehat. Latihan beban merangsang pertumbuhan otot sehingga berat badan yang bertambah bukan sekadar lemak.</p>
+              <ul class="diet-steps">
+                <li>Lakukan latihan beban 3–4 kali seminggu: squat, deadlift, bench press, pull-up</li>
+                <li>Fokus pada latihan compound yang melatih banyak kelompok otot sekaligus</li>
+                <li>Istirahat yang cukup. Otot tumbuh saat tidur, bukan saat berolahraga</li>
+                <li>Konsumsi protein dalam 30–60 menit setelah latihan untuk pemulihan otot</li>
+                <li>Kurangi cardio berlebihan yang dapat membakar terlalu banyak kalori</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="danger-warning">
+            <div class="danger-title">⚠️ Awas Cara Tidak Sehat!</div>
+            <p class="danger-text">Beberapa cara menaikkan berat badan seperti makan berlebihan tanpa kontrol atau hanya fokus pada makanan tinggi kalori memang bisa cepat menambah angka di timbangan. Namun, kenaikannya berasal dari lemak, bukan massa otot yang sehat.</p>
+            <p class="danger-text">Jika tidak diimbangi pola makan seimbang dan aktivitas fisik, berat badan bisa naik secara tidak ideal. Akibatnya, tubuh terlihat berisi tapi tidak benar-benar kuat atau sehat (skinny fat).</p>
+          </div>
+        </div>
+
+        <!-- PESAN NORMAL -->
+        <div id="tipsNormal" style="display:none;">
+          <div class="normal-card">
+            <div class="normal-icon">🎉</div>
+            <h3 class="normal-title">Berat Badan Kamu Sudah Ideal!</h3>
+            <p class="normal-desc">Selamat! Indeks massa tubuhmu berada di rentang normal dan sehat. Ini adalah pencapaian yang luar biasa dan patut dipertahankan.</p>
+            <div class="normal-tips">
+              <div class="normal-tip-item">
+                <span class="ntip-icon">🥦</span>
+                <div>
+                  <strong>Pertahankan pola makan seimbang</strong>
+                  <p>Konsumsi protein, karbohidrat kompleks, lemak sehat, serta sayur dan buah setiap hari secara seimbang.</p>
+                </div>
+              </div>
+              <div class="normal-tip-item">
+                <span class="ntip-icon">🏃</span>
+                <div>
+                  <strong>Tetap aktif bergerak</strong>
+                  <p>Lakukan aktivitas fisik minimal 150 menit per minggu: jalan kaki, bersepeda, berenang, atau olahraga favoritmu.</p>
+                </div>
+              </div>
+              <div class="normal-tip-item">
+                <span class="ntip-icon">💧</span>
+                <div>
+                  <strong>Jaga hidrasi dan tidur cukup</strong>
+                  <p>Minum minimal 2 liter air per hari dan tidur 7–9 jam semalam agar metabolisme tubuh tetap optimal.</p>
+                </div>
+              </div>
+              <div class="normal-tip-item">
+                <span class="ntip-icon">🩺</span>
+                <div>
+                  <strong>Periksa kesehatan secara rutin</strong>
+                  <p>Lakukan cek kesehatan berkala setidaknya satu tahun sekali untuk memastikan kondisi tubuh tetap prima.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-right -->
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
